@@ -60,8 +60,8 @@ const Page: NextPage<DataProps> = ({ initialUsers }) => {
     <main className="w-screen min-h-screen pb-8 flex flex-col gap-8">
       <NavBar />
       <div className="w-[100%] min-h-[80vh] rounded-lg flex justify-center">
-        <Card className="md:p-8">
-          <CardDescription className="font-bold text-center flex items-center justify-center">
+        <Card className="md:p-8 mx-auto md:min-w-[50vw]">
+          <CardDescription className="font-bold text-center flex items-center justify-center mt-4">
             <Icons.user className="mr-4" />
             List of current Active users
           </CardDescription>
