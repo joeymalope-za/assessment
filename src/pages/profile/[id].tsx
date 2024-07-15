@@ -1,4 +1,3 @@
-// import "@/app/globals.css"
 import NavBar from '@/components/ui/navBar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
@@ -11,13 +10,72 @@ import Link from 'next/link';
 
 import { GetServerSideProps, NextPage } from 'next';
 import { User } from '@/lib/types';
-
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 interface ProfileProps {
-  user: User | null;
-  posts: Post[];
+  initialUser: User | null;
+  initialPosts: Post[];
 }
 
-const Profile: NextPage<ProfileProps> = ({ user, posts }) => {
+const Profile: NextPage<ProfileProps> = ({ initialUser, initialPosts }) => {
+  const router = useRouter();
+  const { id } = router.query as { id: string };
+  
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [posts, setPosts] = useState<Post[]>(initialPosts);
+
+  useEffect(() => {
+    if (!id) return;
+    
+    const cachedUser = localStorage.getItem(`user-${id}`);
+    const cachedPosts = localStorage.getItem(`posts-${id}`);
+    
+    if (cachedUser && cachedPosts) {
+      setUser(JSON.parse(cachedUser));
+      setPosts(JSON.parse(cachedPosts));
+    } else {
+      fetchUserAndPosts();
+    }
+  }, [id]);
+
+  const fetchUserAndPosts = async () => {
+    try {
+      const [userRes, postsRes] = await Promise.all([
+        fetch(`https://jsonplaceholder.typicode.com/users/${id}`,{
+          headers: {
+            'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400'
+          }
+        }),
+        fetch(`https://jsonplaceholder.typicode.com/posts?userId=${id}`,{
+          headers: {
+            'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400'
+          }
+        })
+      ]);
+  
+      if (!userRes.ok || !postsRes.ok) {
+        return {
+          notFound: true,
+        };
+      }
+  
+      const [userData, postsData] = await Promise.all([userRes.json(), postsRes.json()]);
+
+      localStorage.setItem(`user-${id}`, JSON.stringify(userData));
+      localStorage.setItem(`posts-${id}`, JSON.stringify(postsData));
+
+      setUser(userData);
+      setPosts(postsData);
+    } catch (error) {
+      console.error(error);
+      return {
+        props: {
+          user: null,
+          posts: []
+        },
+      };
+    }
+  }
 
   if (!user) {
     return <div>User not found</div>;
@@ -26,9 +84,9 @@ const Profile: NextPage<ProfileProps> = ({ user, posts }) => {
   return (
           <main className="w-screen h-screen flex flex-col gap-8">
             <NavBar />
-            <Card className=" max-w-[95vw] min-w-[95vw] md:min-w-[60vw] md:max-w-[60vw] mx-auto">
+            <Card className="max-w-[95vw] min-w-[95vw] overflow-x-auto box-border md:min-w-[60vw] md:max-w-[60vw] mx-auto">
               <CardContent>
-                <div className=" min-h-[90vh] rounded-lg flex gap-6 flex-col justify-center mx-auto pt-5">
+                <div className="min-h-[90vh] rounded-lg flex gap-6 flex-col justify-center mx-auto pt-5">
                     <Button variant={'ghost'} className="mr-auto flex">
                         <Icons.chevronLeft />
                         <Link href={'/'}>
@@ -69,7 +127,7 @@ const Profile: NextPage<ProfileProps> = ({ user, posts }) => {
                                     }
                                 </div>
                                 <div className="flex flex-col md:flex-row gap-8 mt-8 justify-evenly">
-                                    <Card className="w-[400px] flex flex-col justify-between bg-[#e5f1ed] border-none">
+                                    <Card className="w-[375px] flex flex-col justify-between bg-[#e5f1ed] border-none">
                                         <CardHeader>
                                             <CardDescription className="flex gap-4 text-[#508773]"><Icons.work /> Work</CardDescription>
                                         </CardHeader>
@@ -83,7 +141,7 @@ const Profile: NextPage<ProfileProps> = ({ user, posts }) => {
                                          <span className="mr-4">{user?.company?.bs}</span> <Icons.qoute className="opacity-30 text-[#508773]"/>
                                         </CardFooter>
                                     </Card>
-                                    <Card className="w-[400px] bg-[#e0e0fd] border-none flex flex-col justify-between">
+                                    <Card className="w-[375px] bg-[#e0e0fd] border-none flex flex-col justify-between">
                                         <CardHeader>
                                             <CardDescription className="flex gap-4 text-[#6d6da5]"><Icons.address /> Lives in</CardDescription>
                                         </CardHeader>
@@ -109,13 +167,13 @@ const Profile: NextPage<ProfileProps> = ({ user, posts }) => {
                                 </div>
                             </div>
                          </TabsContent>
-                         <TabsContent value="posts">
+                         <TabsContent className='overflow-hidden' value="posts">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="md:w-[100px]">ID</TableHead>
-                                        <TableHead className="md:max-w-[200px]">Title</TableHead>
-                                        <TableHead className="text-center w-[50vw]">Body</TableHead>
+                                        <TableHead className="md:max-w-[150px]">Title</TableHead>
+                                        <TableHead className="text-center">Body</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 {(posts)?(<TableBody>
@@ -123,8 +181,8 @@ const Profile: NextPage<ProfileProps> = ({ user, posts }) => {
                                     (posts.map((post:any) => 
                                     <TableRow key={post.id}>
                                         <TableCell className="md:w-[100px] font-medium">{post.id}</TableCell>
-                                        <TableCell className="md:w-[200px]">{post.title}</TableCell>
-                                        <TableCell className="text-right">{post.body}</TableCell>
+                                        <TableCell className="md:w-[150px]">{post.title}</TableCell>
+                                        <TableCell className="text-left">{post.body}</TableCell>
                                     </TableRow>)
                                     )
                                     }

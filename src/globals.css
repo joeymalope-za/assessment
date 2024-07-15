@@ -6,6 +6,10 @@
 
 @layer base {
 	:root {
+		--green-bg: #e5f1ed;
+		--green: #508773;
+		--purple: #6d6da5;
+		--purple-bg: #e0e0fd;
 		--background: 0 0% 100%;
 		--foreground: 222.2 84% 4.9%;
 		--card: 0 0% 100%;
@@ -34,6 +38,10 @@
 	}
 
 	.dark {
+		--green-muted: #e5f1ed;
+		--green: #508773;
+		--purple: #6d6da5;
+		--purple-muted: #e0e0fd;
 		--background: 222.2 84% 4.9%;
 		--foreground: 210 40% 98%;
 		--card: 222.2 84% 4.9%;
