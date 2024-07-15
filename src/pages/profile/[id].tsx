@@ -1,79 +1,60 @@
-"use client"
-import React,{useState, useEffect} from "react"
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getPosts, getPostsByUserId, getUserById } from "@/lib/data"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Ghost } from "lucide-react"
-import Link from "next/link"
-import NavBar from "@/components/navBar"
-import { Icons } from "@/components/ui/icons"
-import { Skeleton } from "@/components/ui/skeleton"
+// import "@/app/globals.css"
+import NavBar from '@/components/ui/navBar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
+import { Icons } from "@/components/ui/icons";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Post } from '@/lib/types';
+import Link from 'next/link';
 
-export default function Home(param: any): JSX.Element {
-    const [user,setUser] = useState<any>(null)
-    const [posts,setPosts] = useState<any>([])
-    const [id,setId] = useState<any>('')
+import { GetServerSideProps, NextPage } from 'next';
+import { User } from '@/lib/types';
 
-        useEffect(() => {
-        if (id==='' && param?.params?.id) {
-          setId(param.params.id)
-        }
+interface ProfileProps {
+  user: User | null;
+  posts: Post[];
+}
 
-      }, [param?.params?.id, id])
+const Profile: NextPage<ProfileProps> = ({ user, posts }) => {
 
-      useEffect(()=>{
-        if(id.length){
-            setUser(getUserById(id))
-            setPosts(getPostsByUserId(id));
-        }
-      },[id])
+  if (!user) {
+    return <div>User not found</div>;
+  }
 
-    useEffect(()=>{
-        console.log(posts)    
-
-        if(posts.length)
-            console.log(posts)    
-    },[posts])
-
-    return (<main className="w-screen h-screen">
-                <NavBar />
-                <div className="max-w-[95vw] md:max-w-[60vw] min-h-[90vh] rounded-lg flex gap-6 flex-col justify-center mx-auto pt-5">
+  return (
+          <main className="w-screen h-screen flex flex-col gap-8">
+            <NavBar />
+            <Card className=" max-w-[95vw] min-w-[95vw] md:min-w-[60vw] md:max-w-[60vw] mx-auto">
+              <CardContent>
+                <div className=" min-h-[90vh] rounded-lg flex gap-6 flex-col justify-center mx-auto pt-5">
                     <Button variant={'ghost'} className="mr-auto flex">
                         <Icons.chevronLeft />
-                        <Link href={'/users'}>
+                        <Link href={'/'}>
                              <span>Back</span>
                         </Link>
                     </Button>
                     <header className="flex justify-center flex-col items-center gap-5">
                      <h1 className="text-3xl md:text-8xl text-center">Hi! Welcome to </h1>
-                     {user?<h2 className="text-4xl text-center my-4">{user && user.name}&apos;s profile</h2>:<Skeleton className="w-[35vw] h-[40px] rounded-full" /> }
+                     {user?<h2 className="text-4xl text-center my-4"><span className="text-[#6d6da5]">{user && user.name}</span>&apos;s profile</h2>:<Skeleton className="w-[35vw] h-[40px] rounded-full" /> }
                      </header>
-                     <Tabs defaultValue="profile" className="h-[90vh]">
+                     <Tabs defaultValue="profile" className="min-h-[90vh]">
                          <TabsList className="flex mb-8">
-                             <TabsTrigger value="profile" className="md:min-w-[400px]">Profile</TabsTrigger>
-                             <TabsTrigger value="posts" className="md:min-w-[400px]">Posts</TabsTrigger>
+                             <TabsTrigger value="profile" className="md:min-w-[300px]">Profile details</TabsTrigger>
+                             <TabsTrigger value="posts" className="md:min-w-[300px]">View Posts</TabsTrigger>
                          </TabsList>
                          <TabsContent value="profile">
                             <div className="flex flex-col p-8 pl-0 items-center">
                                 <div className="text-center flex gap-4 flex-col justify-between">
                                     <h1 className="text-3xl flex gap-8 align-middle justify-center items-center"><Icons.user className="h-16 w-16" /> {user && user.name}</h1>
                                     <p className="text-gray-500">
-                                        Learn more about below
+                                        More about {user && user.name}
                                     </p>
                                     {
                                     (user)?
                                     <>
-                                        <h2 className="flex gap-8"><Icons.username /> @{user && user.username}</h2>
+                                        <h2 className="flex gap-8"><Icons.username/> @{user && user.username}</h2>
                                         <h2 className="flex gap-8"><Icons.mail />
                                         {user && user.email}</h2>
                                         <h2 className="flex gap-8"><Icons.phone />{user && user.phone}</h2>
@@ -88,10 +69,9 @@ export default function Home(param: any): JSX.Element {
                                     }
                                 </div>
                                 <div className="flex flex-col md:flex-row gap-8 mt-8 justify-evenly">
-                                    <Card className="w-auto min-w-[350px] flex flex-col justify-between">
+                                    <Card className="w-[400px] flex flex-col justify-between bg-[#e5f1ed] border-none">
                                         <CardHeader>
-                                            {/* <CardTitle>Card Title</CardTitle> */}
-                                            <CardDescription className="flex gap-4"><Icons.work /> Work</CardDescription>
+                                            <CardDescription className="flex gap-4 text-[#508773]"><Icons.work /> Work</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                             <ul className="font-[300] flex flex-col gap-2">
@@ -100,32 +80,30 @@ export default function Home(param: any): JSX.Element {
                                             </ul>
                                         </CardContent>
                                         <CardFooter>
-                                         <span className="mr-4">{user?.company?.bs}</span> <Icons.qoute className="opacity-30"/>
+                                         <span className="mr-4">{user?.company?.bs}</span> <Icons.qoute className="opacity-30 text-[#508773]"/>
                                         </CardFooter>
                                     </Card>
-                                    <Card className="w-auto min-w-[350px]">
+                                    <Card className="w-[400px] bg-[#e0e0fd] border-none flex flex-col justify-between">
                                         <CardHeader>
-                                            {/* <CardTitle>Card Title</CardTitle> */}
-                                            <CardDescription className="flex gap-4"><Icons.address /> Lives in</CardDescription>
+                                            <CardDescription className="flex gap-4 text-[#6d6da5]"><Icons.address /> Lives in</CardDescription>
                                         </CardHeader>
-                                        <CardContent>
+                                        <CardContent className="flex flex-wrap">
                                             {(user)?
-                                            <>
-                                            <p>{user?.address?.street}, </p>
-                                            <p>{user?.address?.suite}, </p>
-                                            <p>{user?.address?.city}, </p>
-                                            <p>{user?.address?.zipcode} </p>
-                                            </>:
+                                            <ul>
+                                            <li>{user?.address?.street}, </li>
+                                            <li>{user?.address?.suite}, </li>
+                                            <li>{user?.address?.city}, </li>
+                                            <li>{user?.address?.zipcode} </li>
+                                            </ul>:
                                             <div className="flex flex-col gap-4">
                                                 <Skeleton className="w-[150px] h-[15px] rounded-full" />
                                                 <Skeleton className="w-[150px] h-[15px] rounded-full" />
                                                 <Skeleton className="w-[150px] h-[15px] rounded-full" />
                                                 <Skeleton className="w-[150px] h-[15px] rounded-full" />
                                             </div>}
-
                                         </CardContent>
                                         <CardFooter>
-                                           <Icons.location className="text-muted-foreground mr-4" /> <p> {user?.address?.geo?.lat},{user?.address?.geo?.lat} </p>
+                                           <Icons.location className="mr-4 text-[#6d6da5]" /> <p> {user?.address?.geo?.lat},{user?.address?.geo?.lat} </p>
                                         </CardFooter>
                                     </Card>
                                 </div>
@@ -133,7 +111,6 @@ export default function Home(param: any): JSX.Element {
                          </TabsContent>
                          <TabsContent value="posts">
                             <Table>
-                                <TableCaption>A list of your Users</TableCaption>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="md:w-[100px]">ID</TableHead>
@@ -141,20 +118,69 @@ export default function Home(param: any): JSX.Element {
                                         <TableHead className="text-center w-[50vw]">Body</TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                <TableBody>
+                                {(posts)?(<TableBody>
                                     {
-                                    (posts.map((user:any) => 
-                                    <TableRow key={user.id}>
-                                        <TableCell className="md:w-[100px] font-medium">{user.id}</TableCell>
-                                        <TableCell className="md:w-[200px]">{user.title}</TableCell>
-                                        <TableCell className="text-right">{user.body}</TableCell>
+                                    (posts.map((post:any) => 
+                                    <TableRow key={post.id}>
+                                        <TableCell className="md:w-[100px] font-medium">{post.id}</TableCell>
+                                        <TableCell className="md:w-[200px]">{post.title}</TableCell>
+                                        <TableCell className="text-right">{post.body}</TableCell>
                                     </TableRow>)
                                     )
                                     }
-                                </TableBody>
+                                </TableBody>):
+                                <TableCaption>No posts are currently available</TableCaption>
+                                }     
                             </Table>
                          </TabsContent>
-                         </Tabs>
+                     </Tabs>
                 </div>
-            </main>) 
-}
+              </CardContent>
+            </Card>
+          </main>
+  );
+};
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { id } = context.params as { id: string };
+
+  try {
+    const [userRes, postsRes] = await Promise.all([
+      fetch(`https://jsonplaceholder.typicode.com/users/${id}`,{
+        headers: {
+          'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400'
+        }
+      }),
+      fetch(`https://jsonplaceholder.typicode.com/posts?userId=${id}`,{
+        headers: {
+          'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400'
+        }
+      })
+    ]);
+
+    if (!userRes.ok || !postsRes.ok) {
+      return {
+        notFound: true,
+      };
+    }
+
+    const [user, posts] = await Promise.all([userRes.json(), postsRes.json()]);
+
+    return {
+      props: {
+        user,
+        posts
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      props: {
+        user: null,
+        posts: []
+      },
+    };
+  }
+};
+
+export default Profile;
